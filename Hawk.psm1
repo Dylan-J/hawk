@@ -275,6 +275,10 @@ Function Get-AllUnifiedAuditLogEntry {
     while ($Run) {
         $Output += (Invoke-Expression $cmd)
 
+        if ($Output[-1].ResultCount -ge 50000){
+            Out-LogFile ("ERROR - there are over 50,000 unified audit events. Support for a larger number coming soon. Total count:" + $Output[-1].ResultCount)
+        }
+        break 
         # Check for null results if so warn and stop
         if ($null -eq $Output) {
             Out-LogFile ("[WARNING] - Unified Audit log returned no results.")
@@ -284,7 +288,7 @@ Function Get-AllUnifiedAuditLogEntry {
         else {
             # Sort our result set to make sure the higest number is in the last position
             $Output = $Output | Sort-Object -Property ResultIndex
-
+            
             # if total result count returned is 0 then we should warn and stop
             if ($Output[-1].ResultCount -eq 0) {
                 Out-LogFile ("[WARNING] - Returned Result count was 0")
@@ -295,7 +299,6 @@ Function Get-AllUnifiedAuditLogEntry {
                 Out-LogFile ("Retrieved all results.")
                 $Run = $false
             }
-            
             # Output the current progress
             Out-LogFile ("Retrieved:" + $Output[-1].ResultIndex.tostring().PadRight(5, " ") + " Total: " + $Output[-1].ResultCount)
         }
